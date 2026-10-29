@@ -136,14 +136,12 @@ footer{padding-bottom:110px}}
 .bdg{position:absolute;left:12px;top:12px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .bdg .sale-b,.bdg .new-b{position:relative;left:auto;right:auto;top:auto}
 .old{color:var(--muted);font-weight:400;margin-right:6px}
-#toko{position:relative;overflow:hidden;border-radius:22px;margin:36px 0;padding:44px 24px;color:#fff;background:linear-gradient(180deg,rgba(24,18,14,.58) 0%,rgba(24,18,14,.84) 100%),url("toko.jpg") center 40%/cover,url("foto/toko.jpg") center 40%/cover,url("IMG_3959.jpeg") center 40%/cover,#3a2f28}
+#toko{position:relative;overflow:hidden;border-radius:22px;margin:36px 0;padding:44px 24px;color:var(--ink);background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 70%,transparent) 0%,color-mix(in srgb,var(--bg) 90%,transparent) 100%),url("toko.jpg") center 40%/cover,url("foto/toko.jpg") center 40%/cover,url("IMG_3959.jpeg") center 40%/cover,var(--bg)}
 @media(min-width:760px){#toko{padding:56px 48px}}
-#toko h2{color:#fff}
-#toko h2,#toko .sub{text-shadow:0 1px 8px rgba(0,0,0,.45)}
-#toko .sub{color:rgba(255,255,255,.85)}
-#toko .store{max-width:560px;background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.28);color:#fff}
-#toko .store b{color:#ecd9b8}
-#toko .store a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+#toko .sub{color:var(--muted)}
+#toko .store{max-width:560px;background:color-mix(in srgb,var(--surface) 72%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);color:var(--ink)}
+#toko .store b{color:var(--accent)}
+#toko .store a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
