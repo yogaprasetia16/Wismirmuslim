@@ -129,8 +129,12 @@ footer{padding-bottom:110px}}
 .sale-b::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-120%);animation:saleshine 2.6s ease-in-out infinite}
 @keyframes salepulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
 @keyframes saleshine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
-@media (prefers-reduced-motion:reduce){.sale-b,.sale-b::after{animation:none}}
-.sale-b.l{left:12px;right:auto;top:12px}
+@media (prefers-reduced-motion:reduce){.sale-b,.sale-b::after,.new-b,.new-b::after{animation:none}}
+.new-b{position:absolute;left:10px;top:10px;z-index:2;overflow:hidden;background:linear-gradient(135deg,#7c8b6f,#46583f);color:#fff;font:800 15px/1 "Nunito Sans",sans-serif;letter-spacing:.12em;padding:9px 16px;border-radius:99px;box-shadow:0 4px 14px rgba(70,88,63,.45);animation:newwob 2.2s ease-in-out infinite}
+.new-b::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);transform:translateX(-120%);animation:saleshine 3s ease-in-out infinite .6s}
+@keyframes newwob{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.07)}}
+.bdg{position:absolute;left:12px;top:12px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.bdg .sale-b,.bdg .new-b{position:relative;left:auto;right:auto;top:auto}
 .old{color:var(--muted);font-weight:400;margin-right:6px}
 </style>
 </head>
@@ -228,7 +232,7 @@ let D=[],cat="Semua",term="";
 function card(p,i){
  const PL=photos(p),img=PL[0]||"";
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
- return `<article class="card"><button class="ph" data-k="${D.indexOf(p)}" aria-label="Lihat detail ${esc(p.nama)}" style="background:linear-gradient(160deg,${GR[i%GR.length]})">${img?`<img src="${esc(img)}" alt="${esc(p.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="imgErr(this)">`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}<span class="tag">${esc(p.kategori)}</span>${PL.length>1?`<span class="tag">${PL.length} foto</span>`:""}</button>
+ return `<article class="card"><button class="ph" data-k="${D.indexOf(p)}" aria-label="Lihat detail ${esc(p.nama)}" style="background:linear-gradient(160deg,${GR[i%GR.length]})">${img?`<img src="${esc(img)}" alt="${esc(p.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="imgErr(this)">`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}<span class="tag">${esc(p.kategori)}</span>${PL.length>1?`<span class="tag">${PL.length} foto</span>`:""}</button>
  <div class="info" data-k="${D.indexOf(p)}"><h3>${esc(p.nama)}</h3>${p.bahan?`<span class="meta">${esc(p.bahan)}</span>`:""}${p.ukuran?`<span class="meta">Ukuran: ${esc(p.ukuran)}</span>`:""}${p.harga?`<span class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</span>`:""}
  <a class="btn wa" target="_blank" rel="noopener" href="${wa(msg)}">${WAI}Pesan</a></div></article>`}
 function hero(){
@@ -245,10 +249,10 @@ function render(){
  $("sale").hidden=!sl.length;$("stab").hidden=!sl.length;
  $("sl").innerHTML=sl.map(card).join("");
  if(saleShown!==(sl.length>0)){saleShown=sl.length>0;if(window.navRefresh)navRefresh()}
- const cats=["Semua",...(sl.length?["Sale"]:[]),...CATS.filter(c=>D.some(p=>p.kategori===c)),...[...new Set(D.map(p=>p.kategori))].filter(c=>c&&!CATS.includes(c))];
+ const cats=["Semua",...CATS.filter(c=>D.some(p=>p.kategori===c)),...[...new Set(D.map(p=>p.kategori))].filter(c=>c&&!CATS.includes(c))];
  $("chips").innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
  const t=term.toLowerCase();
- const L=D.filter(p=>(cat==="Semua"||(cat==="Sale"?yes(p.sale):p.kategori===cat))&&(!t||(p.nama+" "+p.warna+" "+p.bahan).toLowerCase().includes(t)));
+ const L=D.filter(p=>(cat==="Semua"||p.kategori===cat)&&(!t||(p.nama+" "+p.warna+" "+p.bahan).toLowerCase().includes(t)));
  $("all").innerHTML=L.length?L.map(card).join(""):`<p class="empty">Tidak ada produk yang cocok. Coba kategori lain atau tanya langsung lewat WhatsApp.</p>`}
 $("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}});
 $("q").addEventListener("input",e=>{term=e.target.value;render()});
@@ -272,7 +276,7 @@ function openM(k){
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
  const rows=[["Kategori",p.kategori],["Bahan",p.bahan],["Ukuran",p.ukuran]].filter(r=>r[1]);
  $("md").innerHTML=`<button class="x" id="mx" aria-label="Tutup">&times;</button>
- <div class="gal"><div class="main" id="gm" style="background:linear-gradient(160deg,${GR[k%GR.length]})">${yes(p.sale)?`<span class="sale-b l">SALE</span>`:""}<div class="trk" id="gp">${ph.map((u,i)=>slide(u,p.nama,i)).join("")}</div>${ph.length>1?`<button class="ar l" data-d="-1" aria-label="Foto sebelumnya">&#8249;</button><button class="ar r" data-d="1" aria-label="Foto berikutnya">&#8250;</button><span class="cnt" id="gc">1 / ${ph.length}</span>`:""}</div>
+ <div class="gal"><div class="main" id="gm" style="background:linear-gradient(160deg,${GR[k%GR.length]})">${yes(p.sale)||yes(p.terbaru)?`<div class="bdg">${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}</div>`:""}<div class="trk" id="gp">${ph.map((u,i)=>slide(u,p.nama,i)).join("")}</div>${ph.length>1?`<button class="ar l" data-d="-1" aria-label="Foto sebelumnya">&#8249;</button><button class="ar r" data-d="1" aria-label="Foto berikutnya">&#8250;</button><span class="cnt" id="gc">1 / ${ph.length}</span>`:""}</div>
  ${ph.length>1?`<div class="th">${ph.map((u,i)=>`<button data-i="${i}" aria-label="Foto ${i+1}" aria-current="${i===0}"><img src="${esc(u)}" alt="" referrerpolicy="no-referrer" loading="lazy"></button>`).join("")}</div>`:""}</div>
  <div class="dt"><h2 id="mt">${esc(p.nama)}</h2>${p.harga?`<div class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</div>`:""}
  <dl>${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join("")}${p.detail?`<div><dt>Detail</dt><dd><div class="dtx${p.detail.length>260?" clamp":""}" id="dtx">${fmt(p.detail)}</div>${p.detail.length>260?`<button class="more" id="more">Baca selengkapnya</button>`:""}</dd></div>`:""}</dl>
