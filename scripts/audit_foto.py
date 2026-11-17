@@ -34,6 +34,11 @@ out.append("### Foto tidak dipakai (aman dihapus)")
 out += [f"- `{f}`" for f in unused] or ["- (tidak ada)"]
 out += ["", "### Nama di Sheet yang filenya belum ada di folder foto/"]
 out += [f"- `{n}` (produk: {p})" for n, p in sorted(missing.items())] or ["- (tidak ada)"]
+out += ["", "### Struktur Sheet", f"Kolom: `{'`, `'.join(head)}`", f"Jumlah produk: {sum(1 for r in rows[1:] if len(r) and dict(zip(head, r)).get('nama'))}"]
+for col in ("kategori", "terbaru", "sale"):
+    if col in head:
+        vals = sorted({(r[head.index(col)] if len(r) > head.index(col) else "").strip() for r in rows[1:]})
+        out.append(f"- Nilai unik `{col}`: {vals}")
 text = "\n".join(out)
 print(text)
 if os.environ.get("GITHUB_STEP_SUMMARY"):
