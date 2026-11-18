@@ -1,6 +1,6 @@
-# Panduan memasang Admin WISMIR
+# Panduan memasang "mesin" katalog WISMIR
 
-Halaman admin ada di **wismir.id/admin**. Agar bisa dipakai, pasang dulu "mesin"-nya di akun Google kamu. Cukup sekali, sekitar 10 menit.
+Katalog website diatur dari **dashboard** (Marketing › Website, lihat panduan dashboard bagian 30). Halaman `wismir.id/admin` sudah dihapus. Panduan ini hanya untuk memasang "mesin"-nya (Google Apps Script) di akun Google kamu. Cukup sekali, sekitar 10 menit.
 
 ## Langkah 1. Buat token GitHub (kunci akses terbatas)
 
@@ -42,10 +42,11 @@ Token ini mengizinkan admin menyimpan dan menghapus foto di repo, dan hanya itu.
    Kalau muncul "Google hasn't verified this app", klik **Advanced → Go to ... (unsafe)**. Ini normal karena script ini buatan kamu sendiri.
 5. **Salin Web app URL** (berakhiran `/exec`).
 
-## Langkah 5. Masuk
+## Langkah 5. Hubungkan ke dashboard
 
-Buka **wismir.id/admin**, tempel Web app URL, isi kata sandi, lalu masuk.
-Kalau URL-nya dikirim ke Claude, URL itu bisa dipasang permanen di halaman admin sehingga tidak perlu ditempel lagi.
+1. Di Script properties, pastikan `ADMIN_PASSWORD` **sama persis dengan PIN dashboard**.
+2. Di dashboard: **Settings → Website catalog URL**, tempel Web app URL (berakhiran `/exec`), lalu **Save settings**.
+3. Buka **Marketing → ikon globe (Website)**.
 
 ## Keamanan data (baca ini)
 
