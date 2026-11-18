@@ -31,6 +31,7 @@
 {"@type":"ClothingStore","@id":"https://wismir.id/#toko2","name":"WISMIR by Uni Karmila (Toko 2)","url":"https://wismir.id/","image":"https://wismir.id/og-image.jpg","description":"Busana muslim wanita harian berbahan katun premium. Ready ecer, grosir, dan seragaman.","telephone":"+6285156643718","openingHours":"Mo-Su 08:00-17:00","address":{"@type":"PostalAddress","streetAddress":"Thamrin City, Lantai Dasar 1, Blok ECL No. 38","addressLocality":"Jakarta Pusat","addressRegion":"DKI Jakarta","addressCountry":"ID"},"sameAs":["https://instagram.com/wismirmuslim","https://www.tiktok.com/@wismirmuslim"]}
 ]}
 </script>
+<link rel="preconnect" href="https://docs.google.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#faf6f0;--surface:#fff;--ink:#2b2420;--muted:#7a6d64;--accent:#6b4f3f;--sage:#7c8b6f;--line:#e8dfd4;--wa:#1f8f4e;--glass:rgba(255,255,255,.55);--glassb:rgba(255,255,255,.75);--thumb:rgba(255,255,255,.85)}
@@ -133,6 +134,11 @@ footer{padding-bottom:110px}}
 .dt{padding:18px 18px 16px;gap:10px}.dt h2{font-size:28px}
 .dt .btn.wa{position:sticky;bottom:12px;z-index:3;box-shadow:0 8px 20px rgba(0,0,0,.28)}
 }
+.sk .ph{background:var(--line);animation:skl 1.4s ease-in-out infinite}
+.sk .info i{display:block;height:13px;border-radius:7px;background:var(--line);margin:5px 0;width:75%;animation:skl 1.4s ease-in-out infinite}
+.sk .info i+i{width:45%}
+@keyframes skl{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.sk .ph,.sk .info i{animation:none}}
 .tag+.tag{margin-left:6px}
 .ar{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .ar.l{left:10px}.ar.r{right:10px}
@@ -203,12 +209,12 @@ footer{padding-bottom:110px}}
 </div>
 </div>
 
-<section id="terbaru"><h2>Koleksi Terbaru</h2><p class="sub">Baru hadir di WISMIR</p><div class="grid" id="new"></div></section>
+<section id="terbaru"><h2>Koleksi Terbaru</h2><p class="sub">Baru hadir di WISMIR</p><div class="grid" id="new"><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article></div></section>
 
 <section id="katalog"><h2>Katalog</h2><p class="sub">Pilih kategori, lalu tap tombol pesan.</p>
 <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
 <input class="search" id="q" type="search" placeholder="Cari nama atau warna" aria-label="Cari produk">
-<div class="grid" id="all"></div></section>
+<div class="grid" id="all"><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article></div></section>
 
 <section id="sale" hidden><h2>Sale</h2><p class="sub">Produk pilihan dengan harga spesial.</p><div class="grid" id="sl"></div></section>
 
@@ -271,14 +277,15 @@ let D=[],cat="Semua",term="";
 function card(p,i){
  const PL=photos(p),img=PL[0]||"";
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
- return `<article class="card"><button class="ph" data-k="${D.indexOf(p)}" aria-label="Lihat detail ${esc(p.nama)}" style="background:linear-gradient(160deg,${GR[i%GR.length]})">${img?`<img src="${esc(img)}" alt="${esc(p.nama)}" loading="lazy" referrerpolicy="no-referrer" onerror="imgErr(this)">`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}<span class="tag">${esc(p.kategori)}</span>${PL.length>1?`<span class="tag">${PL.length} foto</span>`:""}</button>
+ return `<article class="card"><button class="ph" data-k="${D.indexOf(p)}" aria-label="Lihat detail ${esc(p.nama)}" style="background:linear-gradient(160deg,${GR[i%GR.length]})">${img?`<img src="${esc(img)}" alt="${esc(p.nama)}" ${i<4?'fetchpriority="high"':'loading="lazy"'} decoding="async" referrerpolicy="no-referrer" onerror="imgErr(this)">`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}<span class="tag">${esc(p.kategori)}</span>${PL.length>1?`<span class="tag">${PL.length} foto</span>`:""}</button>
  <div class="info" data-k="${D.indexOf(p)}"><h3>${esc(p.nama)}</h3>${p.bahan?`<span class="meta">${esc(p.bahan)}</span>`:""}${p.ukuran?`<span class="meta">Ukuran: ${esc(p.ukuran)}</span>`:""}${p.harga?`<span class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</span>`:""}
  <a class="btn wa" target="_blank" rel="noopener" href="${wa(msg)}">${WAI}Pesan</a></div></article>`}
 function hero(){
  const src=photo(HERO_FOTO)||(photos(D.find(p=>yes(p.terbaru)&&photos(p).length)||D.find(p=>photos(p).length)||{})[0]||"");
  if(!src)return;
- const im=new Image();im.alt="";im.referrerPolicy="no-referrer";
- im.onload=()=>{$("arch").prepend(im);$("mono").remove()};im.onerror=()=>{if(src.indexOf("foto/")===0&&!im.dataset.r){im.dataset.r="1";im.src=src.slice(5)}};im.src=src}
+ const cur=$("arch").querySelector("img");if(cur&&cur.getAttribute("src")===src)return;
+ const im=new Image();im.alt="";im.referrerPolicy="no-referrer";im.fetchPriority="high";
+ im.onload=()=>{const o=$("arch").querySelector("img");if(o)o.remove();$("arch").prepend(im);const m=$("mono");if(m)m.remove()};im.onerror=()=>{if(src.indexOf("foto/")===0&&!im.dataset.r){im.dataset.r="1";im.src=src.slice(5)}};im.src=src}
 let saleShown=null;
 function render(){
  const nw=D.filter(p=>yes(p.terbaru));
@@ -296,14 +303,23 @@ function render(){
 $("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}});
 $("q").addEventListener("input",e=>{term=e.target.value;render()});
 
+const CAT_KEY="wismir_katalog_v1";
+// Last catalog is kept on the device and drawn at once; the Sheet is then read in the background and the page only changes if it differs.
 async function load(){
  if(!SHEET_CSV){D=PRODUK;render();hero();return}
+ let old="";try{old=localStorage.getItem(CAT_KEY)||""}catch(e){}
+ if(old){try{const c=toObjs(parseCSV(old));if(c.length){D=c;render();hero()}}catch(e){}}
+ let text;
  try{
   const r=await fetch(SHEET_CSV,{cache:"no-store"});
   if(!r.ok)throw 0;
-  D=toObjs(parseCSV(await r.text()));
-  if(!D.length)throw 0;
- }catch(e){D=[];render();$("all").innerHTML=`<p class="err">Katalog belum dapat dimuat. Silakan tanya produk langsung lewat WhatsApp.</p>`;hero();return}
+  text=await r.text();
+  const n=toObjs(parseCSV(text));
+  if(!n.length)throw 0;
+  if(text===old&&D.length)return;
+  D=n;
+ }catch(e){if(D.length)return;D=[];render();$("all").innerHTML=`<p class="err">Katalog belum dapat dimuat. Silakan tanya produk langsung lewat WhatsApp.</p>`;hero();return}
+ try{localStorage.setItem(CAT_KEY,text)}catch(e){}
  render();hero()}
 const photos=p=>Object.keys(p).filter(k=>/^foto/.test(k)).map(k=>p[k]).join("|").split(/[\s|,]+/).filter(u=>/^https?:/i.test(u)||/\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(u)).map(u=>photo(u.includes("/")?u:"foto/"+u));
 let lastF=null,gi=0;
