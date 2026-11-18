@@ -52,7 +52,14 @@ Token ini mengizinkan admin menyimpan dan menghapus foto di repo, dan hanya itu.
 
 - **Tab produk di Sheet dipublikasikan ke web sebagai CSV, jadi SEMUA kolomnya bisa dibaca siapa saja** yang tahu alamatnya. Jangan pernah menambah kolom modal, HPP, harga supplier, atau data rahasia lain di tab itu. Simpan data seperti itu di tab atau Sheet lain yang tidak dipublikasikan.
 - Kata sandi admin sebaiknya **12 karakter atau lebih** dan tidak dipakai di akun lain.
+- **Penguncian otomatis:** kalau kata sandi salah **5 kali** dalam 15 menit, semua akses katalog dikunci **10 menit** (termasuk dengan kata sandi yang benar), supaya kata sandi tidak bisa ditebak berulang-ulang. Pesannya: "Terlalu banyak percobaan salah. Coba lagi dalam N menit." Cukup tunggu. Kalau kamu sendiri sering salah ketik, ini juga yang membuat akses terkunci sebentar.
 - Token GitHub dan kata sandi hanya disimpan di Script properties Apps Script. Jangan ditulis di chat, catatan bersama, atau kode.
+
+## Memperbarui kode di Apps Script (kalau `Code.gs` berubah)
+
+1. Buka https://raw.githubusercontent.com/yogaprasetia16/Wismirmuslim/main/apps-script/Code.gs lalu salin semua teksnya.
+2. Di Apps Script (Google Sheet **web** → Ekstensi → Apps Script): hapus semua isi, tempel, lalu simpan (Ctrl+S).
+3. **Deploy → Manage deployments → ikon pensil (Edit) → Version: New version → Deploy.** Jangan pilih "New deployment", karena alamat `/exec` akan berubah dan harus ditempel ulang di dashboard.
 
 ## Catatan penting
 

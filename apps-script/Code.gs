@@ -9,6 +9,8 @@
  * Opsional: GITHUB_BRANCH (default main), SHEET_GID (default 0)
  */
 var PHOTO_DIR = 'foto/';
+// Batas percobaan kata sandi: 5 kali salah dalam 15 menit = semua akses dikunci 10 menit.
+var MAX_FAILS = 5, FAIL_WINDOW_S = 900, LOCK_S = 600;
 var NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.(jpe?g|png|webp)$/i;
 
 function doGet() {
@@ -18,7 +20,10 @@ function doGet() {
 function doPost(e) {
   var req;
   try { req = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'Permintaan tidak valid.' }); }
-  if (!auth_(req.pass)) { Utilities.sleep(800); return json_({ ok: false, error: 'Kata sandi salah.' }); }
+  var left = lockedMinutes_();
+  if (left) return json_({ ok: false, error: 'Terlalu banyak percobaan salah. Coba lagi dalam ' + left + ' menit.' });
+  if (!auth_(req.pass)) { noteFail_(); Utilities.sleep(800); return json_({ ok: false, error: 'Kata sandi salah.' }); }
+  noteOk_();
   var lock = LockService.getScriptLock();
   try {
     lock.waitLock(20000);
@@ -47,6 +52,31 @@ function auth_(p) {
   var diff = 0;
   for (var i = 0; i < real.length; i++) diff |= real.charCodeAt(i) ^ p.charCodeAt(i);
   return diff === 0;
+}
+
+// Sisa menit penguncian (0 = tidak terkunci). Kalau cache bermasalah, akses tidak diblokir.
+function lockedMinutes_() {
+  try {
+    var left = Number(CacheService.getScriptCache().get('lockUntil') || 0) - Date.now();
+    return left > 0 ? Math.ceil(left / 60000) : 0;
+  } catch (e) { return 0; }
+}
+
+function noteFail_() {
+  try {
+    var lock = LockService.getScriptLock();
+    lock.waitLock(5000);
+    try {
+      var c = CacheService.getScriptCache();
+      var n = Number(c.get('fails') || 0) + 1;
+      if (n >= MAX_FAILS) { c.put('lockUntil', String(Date.now() + LOCK_S * 1000), LOCK_S + 60); c.remove('fails'); }
+      else c.put('fails', String(n), FAIL_WINDOW_S);
+    } finally { lock.releaseLock(); }
+  } catch (e) {}
+}
+
+function noteOk_() {
+  try { CacheService.getScriptCache().remove('fails'); } catch (e) {}
 }
 
 function sheet_() {
