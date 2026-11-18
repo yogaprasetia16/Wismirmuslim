@@ -47,6 +47,12 @@ Token ini mengizinkan admin menyimpan dan menghapus foto di repo, dan hanya itu.
 Buka **wismir.id/admin**, tempel Web app URL, isi kata sandi, lalu masuk.
 Kalau URL-nya dikirim ke Claude, URL itu bisa dipasang permanen di halaman admin sehingga tidak perlu ditempel lagi.
 
+## Keamanan data (baca ini)
+
+- **Tab produk di Sheet dipublikasikan ke web sebagai CSV, jadi SEMUA kolomnya bisa dibaca siapa saja** yang tahu alamatnya. Jangan pernah menambah kolom modal, HPP, harga supplier, atau data rahasia lain di tab itu. Simpan data seperti itu di tab atau Sheet lain yang tidak dipublikasikan.
+- Kata sandi admin sebaiknya **12 karakter atau lebih** dan tidak dipakai di akun lain.
+- Token GitHub dan kata sandi hanya disimpan di Script properties Apps Script. Jangan ditulis di chat, catatan bersama, atau kode.
+
 ## Catatan penting
 
 - **Perubahan tampil di web** sekitar 1 sampai 5 menit setelah Simpan. Google butuh waktu memperbarui Sheet yang dipublikasikan, dan GitHub butuh 1 sampai 2 menit untuk foto baru.
