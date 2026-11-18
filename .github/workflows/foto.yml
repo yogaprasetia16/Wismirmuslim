@@ -30,3 +30,6 @@ jobs:
           git diff --staged --quiet || (git commit -m "Kecilkan foto baru otomatis" && git pull --rebase -q && git push)
       - name: Cek foto terpakai dan hilang
         run: python scripts/audit_foto.py
+      - name: Cek situs live (halaman dan semua foto bisa dibuka)
+        continue-on-error: true
+        run: python scripts/check_live.py
