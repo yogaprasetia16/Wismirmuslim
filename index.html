@@ -134,6 +134,11 @@ footer{padding-bottom:110px}}
 .dt{padding:18px 18px 16px;gap:10px}.dt h2{font-size:28px}
 .dt .btn.wa{position:sticky;bottom:12px;z-index:3;box-shadow:0 8px 20px rgba(0,0,0,.28)}
 }
+.arch.ld::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);transform:translateX(-100%);animation:archsh 1.7s ease-in-out infinite;pointer-events:none}
+.arch.ld .mono{animation:monop 1.7s ease-in-out infinite}
+@keyframes archsh{to{transform:translateX(100%)}}
+@keyframes monop{50%{opacity:.4}}
+@media (prefers-reduced-motion:reduce){.arch.ld::after,.arch.ld .mono{animation:none}}
 .sk .ph{background:var(--line);animation:skl 1.4s ease-in-out infinite}
 .sk .info i{display:block;height:13px;border-radius:7px;background:var(--line);margin:5px 0;width:75%;animation:skl 1.4s ease-in-out infinite}
 .sk .info i+i{width:45%}
@@ -202,7 +207,7 @@ footer{padding-bottom:110px}}
 <a class="btn line ico" id="hig" hidden target="_blank" rel="noopener" aria-label="Instagram WISMIR"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
 <a class="btn line ico" id="htt" hidden target="_blank" rel="noopener" aria-label="TikTok WISMIR"><svg class="f" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></a></div>
 </div>
-<div class="archw" aria-hidden="true"><div class="arch" id="arch"><span class="mono" id="mono">W</span></div>
+<div class="archw" aria-hidden="true"><div class="arch ld" id="arch"><span class="mono" id="mono">W</span></div>
 <span class="dot" style="width:54px;height:54px;background:#7c8b6f;left:-26px;top:30%"></span>
 <span class="dot" style="width:34px;height:34px;background:#a67c68;right:-18px;top:14%;animation-delay:-2s"></span>
 <span class="dot" style="width:44px;height:44px;background:#3b3a38;right:-22px;bottom:12%;animation-delay:-4s"></span>
@@ -282,10 +287,10 @@ function card(p,i){
  <a class="btn wa" target="_blank" rel="noopener" href="${wa(msg)}">${WAI}Pesan</a></div></article>`}
 function hero(){
  const src=photo(HERO_FOTO)||(photos(D.find(p=>yes(p.terbaru)&&photos(p).length)||D.find(p=>photos(p).length)||{})[0]||"");
- if(!src)return;
+ if(!src){$("arch").classList.remove("ld");return}
  const cur=$("arch").querySelector("img");if(cur&&cur.getAttribute("src")===src)return;
  const im=new Image();im.alt="";im.referrerPolicy="no-referrer";im.fetchPriority="high";
- im.onload=()=>{const o=$("arch").querySelector("img");if(o)o.remove();$("arch").prepend(im);const m=$("mono");if(m)m.remove()};im.onerror=()=>{if(src.indexOf("foto/")===0&&!im.dataset.r){im.dataset.r="1";im.src=src.slice(5)}};im.src=src}
+ im.onload=()=>{const o=$("arch").querySelector("img");if(o)o.remove();$("arch").prepend(im);const m=$("mono");if(m)m.remove();$("arch").classList.remove("ld")};im.onerror=()=>{if(src.indexOf("foto/")===0&&!im.dataset.r){im.dataset.r="1";im.src=src.slice(5)}else $("arch").classList.remove("ld")};im.src=src}
 let saleShown=null;
 function render(){
  const nw=D.filter(p=>yes(p.terbaru));
@@ -303,6 +308,7 @@ function render(){
 $("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}});
 $("q").addEventListener("input",e=>{term=e.target.value;render()});
 
+setTimeout(()=>{const a=$("arch");if(a)a.classList.remove("ld")},15000); // never animate forever (battery)
 const CAT_KEY="wismir_katalog_v1";
 // Last catalog is kept on the device and drawn at once; the Sheet is then read in the background and the page only changes if it differs.
 async function load(){
