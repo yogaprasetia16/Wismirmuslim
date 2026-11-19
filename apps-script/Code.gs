@@ -9,6 +9,8 @@
  * Opsional: GITHUB_BRANCH (default main), SHEET_GID (default 0)
  */
 var PHOTO_DIR = 'foto/';
+// Testimoni (Marketing > Testimonials di dashboard): daftar disimpan sebagai testimoni/testimoni.json di repo website, fotonya di testimoni/.
+var TESTI_DIR = 'testimoni/', TESTI_FILE = 'testimoni/testimoni.json';
 // Batas percobaan kata sandi: 5 kali salah dalam 15 menit = semua akses dikunci 10 menit.
 var MAX_FAILS = 5, FAIL_WINDOW_S = 900, LOCK_S = 600;
 var NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.(jpe?g|png|webp)$/i;
@@ -31,6 +33,9 @@ function doPost(e) {
       case 'list':   return json_(list_());
       case 'save':   return json_(save_(req));
       case 'delete': return json_(del_(req));
+      case 'testiList':   return json_(testiList_());
+      case 'testiSave':   return json_(testiSave_(req));
+      case 'testiDelete': return json_(testiDelete_(req));
       default:       return json_({ ok: false, error: 'Aksi tidak dikenal.' });
     }
   } catch (err) {
@@ -172,4 +177,89 @@ function ghDelete_(path) {
   if (ex.getResponseCode() !== 200) return false;
   var res = gh_('delete', path, { message: 'Hapus foto produk', sha: JSON.parse(ex.getContentText()).sha, branch: prop_('GITHUB_BRANCH', 'main') });
   return res.getResponseCode() < 300;
+}
+
+// ---------- Testimoni ----------
+function b64text_(b64) { return Utilities.newBlob(Utilities.base64Decode(String(b64).replace(/\s/g, ''))).getDataAsString('UTF-8'); }
+
+function testiRead_() {
+  var r = gh_('get', TESTI_FILE), code = r.getResponseCode();
+  if (code === 404) return { sha: null, items: [] };
+  if (code !== 200) throw new Error('Gagal membaca testimoni dari GitHub (' + code + '). Cek GITHUB_TOKEN dan GITHUB_REPO.');
+  var j = JSON.parse(r.getContentText()), items;
+  try { items = JSON.parse(b64text_(j.content)); } catch (e) { items = []; }
+  return { sha: j.sha, items: Array.isArray(items) ? items : [] };
+}
+
+// Baca, ubah, tulis. Kalau file berubah di tengah jalan (409), ulangi sekali dari bacaan terbaru.
+function testiMutate_(fn, msg) {
+  for (var attempt = 0; attempt < 2; attempt++) {
+    var cur = testiRead_(), items = fn(cur.items);
+    var body = { message: msg, content: Utilities.base64Encode(JSON.stringify(items, null, 1), Utilities.Charset.UTF_8), branch: prop_('GITHUB_BRANCH', 'main') };
+    if (cur.sha) body.sha = cur.sha;
+    var res = gh_('put', TESTI_FILE, body), code = res.getResponseCode();
+    if (code < 300) return items;
+    if (code !== 409 && code !== 422) throw new Error('Gagal menyimpan testimoni ke GitHub (' + code + ').');
+  }
+  throw new Error('Testimoni berubah di tempat lain. Muat ulang daftar lalu coba lagi.');
+}
+
+function testiClean_(d) {
+  d = d || {};
+  var fotos = (d.foto || []).map(String).filter(String);
+  fotos.forEach(function (n) { if (!NAME_RE.test(n)) throw new Error('Nama foto tidak valid: ' + n); });
+  var nama = String(d.nama || '').trim(), komentar = String(d.komentar || '').trim();
+  if (!fotos.length && !komentar) throw new Error('Isi minimal satu foto atau komentar.');
+  if (nama.length > 80) throw new Error('Nama terlalu panjang (maksimal 80 huruf).');
+  if (komentar.length > 1000) throw new Error('Komentar terlalu panjang (maksimal 1000 huruf).');
+  return { foto: fotos, nama: nama, komentar: komentar };
+}
+
+function testiList_() {
+  var items = testiRead_().items.map(function (t) {
+    return { id: String(t.id || ''), foto: (t.foto || []).map(String), nama: String(t.nama || ''), komentar: String(t.komentar || '') };
+  });
+  return { ok: true, items: items };
+}
+
+function testiSave_(req) {
+  var c = testiClean_(req.data), photos = req.newPhotos || [];
+  photos.forEach(function (p) { if (!NAME_RE.test(p.name || '')) throw new Error('Nama foto tidak valid: ' + p.name); });
+  var id = req.id ? String(req.id) : '';
+  photos.forEach(function (p) { ghPut_(TESTI_DIR + p.name, p.b64, 'Foto testimoni'); });
+  var done = { id: id };
+  testiMutate_(function (items) {
+    if (id) {
+      var i = -1;
+      items.forEach(function (t, k) { if (String(t.id) === id) i = k; });
+      if (i < 0) throw new Error('Testimoni tidak ditemukan. Muat ulang daftar.');
+      var o = req.orig;
+      if (o && JSON.stringify([(items[i].foto || []).join('|'), items[i].nama || '', items[i].komentar || '']) !== JSON.stringify([(o.foto || []).join('|'), o.nama || '', o.komentar || ''])) {
+        throw new Error('Testimoni ini berubah di tempat lain. Muat ulang daftar lalu coba lagi.');
+      }
+      items[i] = { id: id, foto: c.foto, nama: c.nama, komentar: c.komentar };
+    } else {
+      done.id = Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+      items.unshift({ id: done.id, foto: c.foto, nama: c.nama, komentar: c.komentar });
+    }
+    return items;
+  }, 'Testimoni: ' + (c.nama || 'tanpa nama'));
+  return { ok: true, id: done.id, uploaded: photos.map(function (p) { return p.name; }), deleted: testiDeleteFiles_(req.deleteFiles) };
+}
+
+function testiDelete_(req) {
+  var id = String(req.id || '');
+  if (!id) throw new Error('Testimoni tidak ditemukan.');
+  testiMutate_(function (items) {
+    var n = items.filter(function (t) { return String(t.id) !== id; });
+    if (n.length === items.length) throw new Error('Testimoni tidak ditemukan. Muat ulang daftar.');
+    return n;
+  }, 'Hapus testimoni');
+  return { ok: true, deleted: testiDeleteFiles_(req.deleteFiles) };
+}
+
+function testiDeleteFiles_(names) {
+  var done = [];
+  (names || []).forEach(function (n) { if (NAME_RE.test(n) && ghDelete_(TESTI_DIR + n)) done.push(n); });
+  return done;
 }
