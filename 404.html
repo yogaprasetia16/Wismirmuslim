@@ -7,6 +7,6 @@
 <script>
 // Link produk baru (/p/<slug>/) yang halaman pratinjaunya belum dibuat tetap membuka produknya.
 function target(path){var m=/^\/p\/([a-z0-9-]+)\/?$/.exec(path);return m?"/?p="+m[1]:null}
-var t=target(location.pathname);if(t)location.replace(t);
+var t=target(location.pathname);if(t)location.replace(t+(location.search?"&"+location.search.slice(1):""));
 </script>
 </head><body><main><h1>Halaman tidak ditemukan</h1><p>Mungkin link-nya salah atau produknya sudah tidak ada.</p><p><a href="/">Ke beranda WISMIR</a></p></main></body></html>

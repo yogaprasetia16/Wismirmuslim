@@ -76,7 +76,7 @@ def page(slug, row):
 <meta name="twitter:description" content="{e(desc, quote=True)}">
 <meta name="twitter:image" content="{e(img)}">
 <meta http-equiv="refresh" content="0;url={go}">
-<script>location.replace("{go}")</script>
+<script>location.replace("{go}"+(location.search?"&"+location.search.slice(1):""))</script>
 </head><body><p>Membuka <a href="{go}">{e(nama)}</a> di WISMIR…</p></body></html>
 """
 
