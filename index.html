@@ -106,6 +106,9 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 20px}
 .dt dl{margin:0;display:grid;gap:8px}.dt dt{font-size:13px;color:var(--muted)}.dt dd{margin:0}
 .dt .desc{color:var(--muted);margin:0;white-space:pre-line}
 .x{position:absolute;right:12px;top:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.shr{position:absolute;right:58px;top:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.2);padding:0}
+.shr svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:70;max-width:min(90vw,380px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 @media (prefers-reduced-motion:reduce){.mo.on,.md{animation:none}}
 .logo svg{display:block;height:30px;width:auto;color:var(--accent)}
 [hidden]{display:none!important}
@@ -314,7 +317,7 @@ const CAT_KEY="wismir_katalog_v1";
 async function load(){
  if(!SHEET_CSV){D=PRODUK;render();hero();return}
  let old="";try{old=localStorage.getItem(CAT_KEY)||""}catch(e){}
- if(old){try{const c=toObjs(parseCSV(old));if(c.length){D=c;render();hero()}}catch(e){}}
+ if(old){try{const c=toObjs(parseCSV(old));if(c.length){D=c;render();hero();deepLink()}}catch(e){}}
  let text;
  try{
   const r=await fetch(SHEET_CSV,{cache:"no-store"});
@@ -326,17 +329,35 @@ async function load(){
   D=n;
  }catch(e){if(D.length)return;D=[];render();$("all").innerHTML=`<p class="err">Katalog belum dapat dimuat. Silakan tanya produk langsung lewat WhatsApp.</p>`;hero();return}
  try{localStorage.setItem(CAT_KEY,text)}catch(e){}
- render();hero()}
+ render();hero();deepLink()}
 const photos=p=>Object.keys(p).filter(k=>/^foto/.test(k)).map(k=>p[k]).join("|").split(/[\s|,]+/).filter(u=>/^https?:/i.test(u)||/\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(u)).map(u=>photo(u.includes("/")?u:"foto/"+u));
 let lastF=null,gi=0;
 const slide=(u,n,i)=>`<img src="${esc(u)}" alt="${esc(n)} foto ${i+1}"${i?' loading="lazy"':""} referrerpolicy="no-referrer" onerror="imgErr(this)">`;
 const imgTag=(u,n)=>`<img src="${esc(u)}" alt="${esc(n)}" referrerpolicy="no-referrer" onerror="imgErr(this)">`;
+// Link per produk (owner 2026-11-19): /?p=<slug> membuka produk itu; /p/<slug>/ = halaman pratinjau statis (dibuat scripts/update_share.py) yang lalu membuka /?p=<slug>.
+// Aturan slug HARUS sama dengan slug() di scripts/update_share.py.
+const slugOf=n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"produk";
+function slugs(L){const seen={};return L.map(p=>{const s=slugOf(p.nama),n=seen[s]=(seen[s]||0)+1;return n>1?s+"-"+n:s})}
+let deepDone=false;
+function deepLink(){
+ if(deepDone)return;
+ let q="";try{q=new URLSearchParams(location.search).get("p")||""}catch(e){}
+ if(!q){deepDone=true;return}
+ const k=slugs(D).indexOf(q);if(k<0)return; // mungkin produknya baru datang di pembacaan Sheet berikutnya
+ deepDone=true;openM(k)}
+function toast(t){const o=document.createElement("div");o.className="toast";o.setAttribute("role","status");o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),3200)}
+async function shareP(){
+ const k=+$("md").dataset.k,p=D[k];if(!p)return;
+ const url=location.origin+"/p/"+slugs(D)[k]+"/";
+ if(navigator.share){try{await navigator.share({title:p.nama+" – WISMIR",text:"Lihat "+p.nama+" di WISMIR",url});return}catch(e){if(e&&e.name==="AbortError")return}}
+ try{await navigator.clipboard.writeText(url);toast("Link produk disalin")}
+ catch(e){const a=document.createElement("textarea");a.value=url;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();toast(ok?"Link produk disalin":"Salin link ini: "+url)}}
 function openM(k){
  const p=D[k];if(!p)return;
  const ph=photos(p);
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
  const rows=[["Kategori",p.kategori],["Bahan",p.bahan],["Ukuran",p.ukuran]].filter(r=>r[1]);
- $("md").innerHTML=`<button class="x" id="mx" aria-label="Tutup">&times;</button>
+ $("md").innerHTML=`<button class="x" id="mx" aria-label="Tutup">&times;</button><button class="shr" id="shr" type="button" aria-label="Bagikan produk" title="Bagikan"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg></button>
  <div class="gal"><div class="main" id="gm" style="background:linear-gradient(160deg,${GR[k%GR.length]})">${yes(p.sale)||yes(p.terbaru)?`<div class="bdg">${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}</div>`:""}<div class="trk" id="gp">${ph.map((u,i)=>slide(u,p.nama,i)).join("")}</div>${ph.length>1?`<button class="ar l" data-d="-1" aria-label="Foto sebelumnya">&#8249;</button><button class="ar r" data-d="1" aria-label="Foto berikutnya">&#8250;</button><span class="cnt" id="gc">1 / ${ph.length}</span>`:""}</div>
  ${ph.length>1?`<div class="th">${ph.map((u,i)=>`<button data-i="${i}" aria-label="Foto ${i+1}" aria-current="${i===0}"><img src="${esc(u)}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="imgErr(this)"></button>`).join("")}</div>`:""}</div>
  <div class="dt"><h2 id="mt">${esc(p.nama)}</h2>${p.harga?`<div class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</div>`:""}
@@ -346,6 +367,7 @@ function openM(k){
  $("md").dataset.k=k;gi=0;$("gp").addEventListener("scroll",syncP,{passive:true});
  lastF=document.activeElement;
  $("mo").classList.add("on");document.body.style.overflow="hidden";
+ try{history.replaceState(null,"","?p="+slugs(D)[k])}catch(e){}
  $("mx").focus();
 }
 let st=0,busy=0;
@@ -367,9 +389,10 @@ function fmt(t){
   else{if(ul){h+="</ul>";ul=false}if(x)h+=`<p>${esc(x)}</p>`}});
  return h+(ul?"</ul>":"")}
 $("md").addEventListener("click",e=>{const m=e.target.closest("#more");if(m){$("dtx").classList.remove("clamp");m.remove()}});
-function closeM(){$("mo").classList.remove("on");document.body.style.overflow="";if(lastF&&lastF.focus)lastF.focus()}
+function closeM(){$("mo").classList.remove("on");document.body.style.overflow="";try{if(/[?&]p=/.test(location.search))history.replaceState(null,"",location.pathname)}catch(e){}if(lastF&&lastF.focus)lastF.focus()}
 $("mo").addEventListener("click",e=>{
  if(e.target===$("mo")||e.target.closest("#mx"))return closeM();
+ if(e.target.closest("#shr"))return shareP();
  const b=e.target.closest(".th button"),ar=e.target.closest(".ar");
  if(b)showP(+b.dataset.i);
  if(ar)showP(gi+ +ar.dataset.d);

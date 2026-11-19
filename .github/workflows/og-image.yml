@@ -18,9 +18,11 @@ jobs:
           python-version: "3.12"
       - run: pip install pillow
       - run: python scripts/update_og.py
+      - name: Buat halaman pratinjau per produk
+        run: python scripts/update_share.py
       - name: Commit jika ada perubahan
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add og-image.jpg index.html
-          git diff --staged --quiet || (git commit -m "Perbarui foto pratinjau dari produk terbaru" && git push)
+          git add og-image.jpg index.html p
+          git diff --staged --quiet || (git commit -m "Perbarui foto pratinjau dan halaman produk" && git push)
