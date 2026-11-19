@@ -1,6 +1,6 @@
 # Panduan memasang "mesin" katalog WISMIR
 
-Katalog website diatur dari **dashboard** (Marketing › Website, lihat panduan dashboard bagian 30). Halaman `wismir.id/admin` sudah dihapus. Panduan ini hanya untuk memasang "mesin"-nya (Google Apps Script) di akun Google kamu. Cukup sekali, sekitar 10 menit.
+Katalog website diatur dari **dashboard** (Marketing › Website, lihat panduan dashboard bagian 30). Halaman `wismir.id/admin` sudah dihapus. Panduan ini hanya untuk memasang "mesin"-nya (Google Apps Script katalog, terpisah dari Apps Script dashboard) di akun Google kamu. Cukup sekali, sekitar 10 menit.
 
 ## Langkah 1. Buat token GitHub (kunci akses terbatas)
 
@@ -44,9 +44,13 @@ Token ini mengizinkan admin menyimpan dan menghapus foto di repo, dan hanya itu.
 
 ## Langkah 5. Hubungkan ke dashboard
 
-1. Di Script properties, pastikan `ADMIN_PASSWORD` **sama persis dengan PIN dashboard**.
-2. Di dashboard: **Settings → Website catalog URL**, tempel Web app URL (berakhiran `/exec`), lalu **Save settings**.
-3. Buka **Marketing → ikon globe (Website)**.
+Dashboard memakai Apps Script ini (terpisah dari Apps Script dashboard/kasir).
+
+1. Di dashboard: **Settings → Website catalog URL**, tempel Web app URL (berakhiran `/exec`).
+2. **Website catalog password**: isi dengan `ADMIN_PASSWORD` dari Script properties. **Kosongkan** kalau `ADMIN_PASSWORD` sama persis dengan Access PIN dashboard.
+3. Klik **Save settings**, lalu buka **Marketing → ikon globe (Website)**. Lakukan di setiap perangkat yang dipakai.
+
+Untuk mengganti kata sandi katalog: ubah `ADMIN_PASSWORD` di Script properties, lalu samakan di Settings dashboard (atau samakan dengan PIN dan kosongkan kolomnya).
 
 ## Keamanan data (baca ini)
 
