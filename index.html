@@ -249,6 +249,7 @@ const WA = "6285156643718";
 const IG = "wismirmuslim"; // username Instagram tanpa @
 const TT = "wismirmuslim"; // username TikTok tanpa @
 const TESTI_CSV = "";   // link CSV (Publish to web) untuk tab "testimoni" di Google Sheet. Kolom: foto, nama, komentar
+const TESTI_JSON = "testimoni/testimoni.json"; // daftar testimoni, dikelola dari dashboard (Marketing > Testimonials); foto di folder testimoni/
 const TESTI_LOKAL = []; // alternatif: foto di folder website, contoh ["testimoni/1.jpg","testimoni/2.jpg"]
 const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQ0UE4z5zubPo17RH_ZBwzRI-TadDw5UUizcXlktUGUmkmsVeMm7E6oBrWqIbs0Qi_7vjK-c71Kdv5/pub?gid=0&single=true&output=csv";  // tempel link Google Sheet "Publish to web" format CSV di sini
 const HERO_FOTO = "";  // opsional: link foto untuk beranda. Jika kosong, dipakai foto produk terbaru dari sheet.
@@ -447,6 +448,13 @@ function renderTesti(T){
  if(window.navRefresh)navRefresh()}
 async function loadTesti(){
  let T=TESTI_LOKAL.map(src=>({src:photo(src)}));
+ try{const r=await fetch(TESTI_JSON,{cache:"no-cache"});
+  if(r.ok){const L=await r.json();
+   (Array.isArray(L)?L:[]).forEach(it=>{
+    const ph=(Array.isArray(it.foto)?it.foto:[]).filter(n=>/^[A-Za-z0-9][\w.-]*\.(jpe?g|png|webp)$/i.test(n)).map(n=>"testimoni/"+n);
+    if(ph.length)ph.forEach((u,i)=>T.push({src:u,nama:i?"":it.nama,komentar:i?"":it.komentar}));
+    else if(it.komentar)T.push({nama:it.nama,komentar:it.komentar})})}
+ }catch(e){}
  if(TESTI_CSV){
   try{const r=await fetch(TESTI_CSV,{cache:"no-store"});
    if(r.ok){const rows=parseCSV(await r.text()),h=rows[0].map(x=>x.trim().toLowerCase());
