@@ -15,7 +15,9 @@ var TESTI_DIR = 'testimoni/', TESTI_FILE = 'testimoni/testimoni.json';
 var MAX_FAILS = 5, FAIL_WINDOW_S = 900, LOCK_S = 600;
 var NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.(jpe?g|png|webp)$/i;
 
-function doGet() {
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (p.h) return hit_(p); // statistik pengunjung dari web (tanpa kata sandi, hanya menambah hitungan)
   return json_({ ok: true, info: 'WISMIR admin API' });
 }
 
@@ -33,6 +35,7 @@ function doPost(e) {
       case 'list':   return json_(list_());
       case 'save':   return json_(save_(req));
       case 'delete': return json_(del_(req));
+      case 'statsGet':    return json_(statsGet_(req));
       case 'testiList':   return json_(testiList_());
       case 'testiSave':   return json_(testiSave_(req));
       case 'testiDelete': return json_(testiDelete_(req));
@@ -262,4 +265,66 @@ function testiDeleteFiles_(names) {
   var done = [];
   (names || []).forEach(function (n) { if (NAME_RE.test(n) && ghDelete_(TESTI_DIR + n)) done.push(n); });
   return done;
+}
+
+// ---------- Statistik pengunjung ----------
+// Web mengirim hitungan lewat GET (doGet): ?h=<kejadian>&k=<kunci>&s=<id sesi>. Tanpa cookie, tanpa IP, tanpa data pribadi.
+// Kejadian: visit (kunci = sumber: instagram, tiktok, google, direct, ...), product (kunci = slug produk yang dibuka),
+// wa (klik tombol WhatsApp, kunci = slug atau "umum"), share (tombol Bagikan). Disimpan di tab "Statistik" Sheet ini:
+// id | tanggal | kejadian | kunci | jumlah  (satu baris per tanggal + kejadian + kunci). Tab itu tidak ikut dipublikasikan ke web.
+var HIT_EVENTS = { visit: 1, product: 1, wa: 1, share: 1 };
+var STATS_TAB = 'Statistik', HIT_PER_SESSION_HOUR = 80, HIT_PER_DAY = 20000;
+
+function statsSheet_() {
+  var ss = SpreadsheetApp.getActive(), sh = ss.getSheetByName(STATS_TAB);
+  if (!sh) {
+    sh = ss.insertSheet(STATS_TAB);
+    sh.getRange(1, 1, 1, 5).setValues([['id', 'tanggal', 'kejadian', 'kunci', 'jumlah']]);
+    sh.getRange('A:B').setNumberFormat('@'); // teks, supaya tanggal tidak diubah Sheets menjadi tanggal bergeser zona waktu
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function today_() { return Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd'); }
+
+function hit_(p) {
+  var ok = json_({ ok: true });
+  try {
+    var ev = String(p.h || ''), key = String(p.k || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 80);
+    if (!HIT_EVENTS[ev]) return json_({ ok: false });
+    if (!key) key = ev === 'visit' ? 'direct' : 'umum';
+    var sid = String(p.s || '').replace(/[^a-z0-9]/gi, '').slice(0, 24) || 'x';
+    var cache = CacheService.getScriptCache(), day = today_();
+    var ck = 'hit:' + sid, n = Number(cache.get(ck) || 0);
+    if (n >= HIT_PER_SESSION_HOUR) return json_({ ok: false });
+    var dk = 'hitday:' + day, dn = Number(cache.get(dk) || 0);
+    if (dn >= HIT_PER_DAY) return json_({ ok: false });
+    cache.put(ck, String(n + 1), 3600);
+    cache.put(dk, String(dn + 1), 90000);
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(4000)) return ok; // sibuk: hitungan ini dilewati, tidak mengganggu pengunjung
+    try {
+      var sh = statsSheet_(), id = day + '|' + ev + '|' + key;
+      var f = sh.createTextFinder(id).matchEntireCell(true).findNext();
+      if (f) { var c = sh.getRange(f.getRow(), 5); c.setValue(Number(c.getValue() || 0) + 1); }
+      else sh.appendRow([id, day, ev, key, 1]);
+    } finally { lock.releaseLock(); }
+  } catch (err) {}
+  return ok;
+}
+
+// Untuk dashboard (pakai kata sandi): baris statistik N hari terakhir.
+function statsGet_(req) {
+  var days = Math.max(1, Math.min(120, Number(req.days) || 30));
+  var cut = Utilities.formatDate(new Date(Date.now() - (days - 1) * 86400000), 'Asia/Jakarta', 'yyyy-MM-dd');
+  var sh = statsSheet_(), last = sh.getLastRow(), rows = [];
+  if (last > 1) {
+    var from = Math.max(2, last - 9999);
+    sh.getRange(from, 2, last - from + 1, 4).getValues().forEach(function (r) {
+      var d = r[0] instanceof Date ? Utilities.formatDate(r[0], 'Asia/Jakarta', 'yyyy-MM-dd') : String(r[0]);
+      if (d >= cut) rows.push([d, String(r[1]), String(r[2]), Number(r[3]) || 0]);
+    });
+  }
+  return { ok: true, from: cut, today: today_(), rows: rows };
 }

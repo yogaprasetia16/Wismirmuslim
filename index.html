@@ -249,6 +249,7 @@ const WA = "6285156643718";
 const IG = "wismirmuslim"; // username Instagram tanpa @
 const TT = "wismirmuslim"; // username TikTok tanpa @
 const TESTI_CSV = "";   // link CSV (Publish to web) untuk tab "testimoni" di Google Sheet. Kolom: foto, nama, komentar
+const STATS_URL = "https://script.google.com/macros/s/AKfycbxa-oS3R_gWM8h7hKEXBOiXHLCqu0Dilq3DrVOH5yPQSHoN4rCcDApQa8_r99T8FuJfZg/exec"; // statistik pengunjung sendiri (Apps Script katalog); kosongkan untuk mematikan
 const TESTI_JSON = "testimoni/testimoni.json"; // daftar testimoni, dikelola dari dashboard (Marketing > Testimonials); foto di folder testimoni/
 const TESTI_LOKAL = []; // alternatif: foto di folder website, contoh ["testimoni/1.jpg","testimoni/2.jpg"]
 const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQ0UE4z5zubPo17RH_ZBwzRI-TadDw5UUizcXlktUGUmkmsVeMm7E6oBrWqIbs0Qi_7vjK-c71Kdv5/pub?gid=0&single=true&output=csv";  // tempel link Google Sheet "Publish to web" format CSV di sini
@@ -259,6 +260,26 @@ const PRODUK = [];
 // =====================================
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---- Statistik pengunjung sendiri (owner 2026-11-19): tanpa cookie, tanpa IP, tanpa pihak ketiga. Hanya hitungan: kunjungan (per sesi tab,
+// dengan sumbernya), produk yang dibuka, klik WhatsApp, klik Bagikan. Tampil di dashboard (Marketing > Website > Visitors).
+// Kunjungan sendiri dikecualikan: buka sekali wismir.id/?nt=1 di perangkat itu. Bot, mesin uji, dan mode tanpa STATS_URL tidak mengirim.
+const track=(()=>{
+ let off=!STATS_URL||navigator.webdriver||/bot|crawl|spider|preview|lighthouse|headless/i.test(navigator.userAgent||"");
+ try{if(/[?&]nt=1(&|$)/.test(location.search))localStorage.setItem("wismir_nt","1");if(localStorage.getItem("wismir_nt"))off=true}catch(e){}
+ const rnd=()=>Math.random().toString(36).slice(2,12);
+ let sid="";try{sid=sessionStorage.getItem("wismir_sid")||rnd();sessionStorage.setItem("wismir_sid",sid)}catch(e){sid=rnd()}
+ const seen={};
+ return (ev,key,once)=>{
+  if(off)return;
+  if(once){const id=ev+"|"+key;if(seen[id])return;seen[id]=1;try{if(sessionStorage.getItem("wismir_s_"+id))return;sessionStorage.setItem("wismir_s_"+id,"1")}catch(e){}}
+  try{fetch(STATS_URL+"?h="+ev+"&k="+encodeURIComponent(key||"")+"&s="+sid,{mode:"no-cors",keepalive:true,credentials:"omit",referrerPolicy:"no-referrer"})}catch(e){}}})();
+function srcOf(){
+ let q="";try{const u=new URLSearchParams(location.search);q=u.get("ref")||u.get("utm_source")||""}catch(e){}
+ q=q.toLowerCase().replace(/[^a-z0-9-]/g,"").slice(0,24);if(q)return q;
+ let h="";try{h=new URL(document.referrer).hostname.toLowerCase()}catch(e){}
+ if(!h||h===location.hostname)return "direct";
+ return /instagram\./.test(h)?"instagram":/tiktok\./.test(h)?"tiktok":/facebook\.|(^|\.)fb\./.test(h)?"facebook":/wa\.me|whatsapp/.test(h)?"whatsapp":/google\./.test(h)?"google":/(^|\.)t\.co$|twitter\.|(^|\.)x\.com$/.test(h)?"x":/shopee|tokopedia/.test(h)?"marketplace":"lain"}
 const wa=t=>`https://wa.me/${WA}${t?"?text="+encodeURIComponent(t):""}`;
 ["hwa","wa2"].forEach(i=>$(i).href=wa("Halo WISMIR, saya ingin bertanya tentang produk."));
 if(IG){$("hig").href="https://instagram.com/"+IG;$("hig").hidden=false;$("igrow").hidden=false;$("ig").href="https://instagram.com/"+IG;$("ig").textContent="@"+IG;}
@@ -349,12 +370,14 @@ function deepLink(){
 function toast(t){const o=document.createElement("div");o.className="toast";o.setAttribute("role","status");o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),3200)}
 async function shareP(){
  const k=+$("md").dataset.k,p=D[k];if(!p)return;
+ track("share",slugs(D)[k]);
  const url=location.origin+"/p/"+slugs(D)[k]+"/";
  if(navigator.share){try{await navigator.share({title:p.nama+" – WISMIR",text:"Lihat "+p.nama+" di WISMIR",url});return}catch(e){if(e&&e.name==="AbortError")return}}
  try{await navigator.clipboard.writeText(url);toast("Link produk disalin")}
  catch(e){const a=document.createElement("textarea");a.value=url;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();toast(ok?"Link produk disalin":"Salin link ini: "+url)}}
 function openM(k){
  const p=D[k];if(!p)return;
+ track("product",slugs(D)[k],true);
  const ph=photos(p);
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
  const rows=[["Kategori",p.kategori],["Bahan",p.bahan],["Ukuran",p.ukuran]].filter(r=>r[1]);
@@ -490,6 +513,12 @@ document.addEventListener("keydown",e=>{
  if(e.key==="Escape")closeLB();
  if(e.key==="ArrowRight")openLB(li+1);
  if(e.key==="ArrowLeft")openLB(li-1)});
+document.addEventListener("click",e=>{
+ const a=e.target.closest&&e.target.closest('a[href^="https://wa.me/"]');if(!a)return;
+ let k="";const c=a.closest("[data-k]");
+ if(c)k=slugs(D)[+c.dataset.k]||"";else if(a.closest("#md"))k=slugs(D)[+$("md").dataset.k]||"";
+ track("wa",k||"umum")});
+track("visit",srcOf(),true);
 load();
 loadTesti();
 </script>
