@@ -69,6 +69,8 @@ header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 80
 @media (prefers-reduced-motion:reduce){.hero *,.arch,.archw .dot{animation:none!important}html{scroll-behavior:auto}}
 section{padding:32px 0}
 h2{font-size:30px;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+.cshr{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;margin:0 0 12px}
+.cshr svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px}
 .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;font:inherit;font-size:14px}
 .chip[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -221,6 +223,7 @@ footer{padding-bottom:110px}}
 
 <section id="katalog"><h2>Katalog</h2><p class="sub">Pilih kategori, lalu tap tombol pesan.</p>
 <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
+<button class="cshr" id="cshr" type="button" aria-label="Bagikan katalog kategori ini" title="Bagikan katalog kategori ini"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg><span id="cshrt">Bagikan katalog</span></button>
 <input class="search" id="q" type="search" placeholder="Cari nama atau warna" aria-label="Cari produk">
 <div class="grid" id="all"><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article></div></section>
 
@@ -330,7 +333,22 @@ function render(){
  const t=term.toLowerCase();
  const L=D.filter(p=>(cat==="Semua"||p.kategori===cat)&&(!t||(p.nama+" "+p.warna+" "+p.bahan).toLowerCase().includes(t)));
  $("all").innerHTML=L.length?L.map(card).join(""):`<p class="empty">Tidak ada produk yang cocok. Coba kategori lain atau tanya langsung lewat WhatsApp.</p>`}
-$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;render()}});
+$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;katUrl();render()}});
+function katUrl(dropP){try{const u=new URLSearchParams(location.search);if(dropP)u.delete("p");if(cat==="Semua")u.delete("k");else u.set("k",slugOf(cat));const q=u.toString();history.replaceState(null,"",location.pathname+(q?"?"+q:""))}catch(e){}
+ const t=$("cshrt");if(t)t.textContent=cat==="Semua"?"Bagikan katalog":"Bagikan "+cat}
+let katDone=false;
+function katLink(){
+ if(katDone)return;
+ let q="";try{q=new URLSearchParams(location.search).get("k")||""}catch(e){}
+ if(!q){katDone=true;return}
+ const c=[...new Set(D.map(p=>p.kategori))].find(c=>c&&slugOf(c)===q);if(!c)return;
+ katDone=true;cat=c;katUrl();render();
+ setTimeout(()=>{const k=$("katalog");if(k&&!/[?&]p=/.test(location.search))k.scrollIntoView({behavior:"smooth",block:"start"})},250)}
+$("cshr").addEventListener("click",async()=>{
+ const url=location.origin+"/"+(cat==="Semua"?"":"?k="+slugOf(cat)),nm=cat==="Semua"?"katalog":"katalog "+cat;
+ if(navigator.share){try{await navigator.share({title:"WISMIR – "+nm,text:"Lihat "+nm+" WISMIR",url});return}catch(e){if(e&&e.name==="AbortError")return}}
+ try{await navigator.clipboard.writeText(url);toast("Link "+nm+" disalin")}
+ catch(e){const a=document.createElement("textarea");a.value=url;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();toast(ok?"Link "+nm+" disalin":"Salin link ini: "+url)}});
 $("q").addEventListener("input",e=>{term=e.target.value;render()});
 
 setTimeout(()=>{const a=$("arch");if(a)a.classList.remove("ld")},15000); // never animate forever (battery)
@@ -339,7 +357,7 @@ const CAT_KEY="wismir_katalog_v1";
 async function load(){
  if(!SHEET_CSV){D=PRODUK;render();hero();return}
  let old="";try{old=localStorage.getItem(CAT_KEY)||""}catch(e){}
- if(old){try{const c=toObjs(parseCSV(old));if(c.length){D=c;render();hero();deepLink()}}catch(e){}}
+ if(old){try{const c=toObjs(parseCSV(old));if(c.length){D=c;render();hero();katLink();deepLink()}}catch(e){}}
  let text;
  try{
   const r=await fetch(SHEET_CSV,{cache:"no-store"});
@@ -351,7 +369,7 @@ async function load(){
   D=n;
  }catch(e){if(D.length)return;D=[];render();$("all").innerHTML=`<p class="err">Katalog belum dapat dimuat. Silakan tanya produk langsung lewat WhatsApp.</p>`;hero();return}
  try{localStorage.setItem(CAT_KEY,text)}catch(e){}
- render();hero();deepLink()}
+ render();hero();katLink();deepLink()}
 const photos=p=>Object.keys(p).filter(k=>/^foto/.test(k)).map(k=>p[k]).join("|").split(/[\s|,]+/).filter(u=>/^https?:/i.test(u)||/\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i.test(u)).map(u=>photo(u.includes("/")?u:"foto/"+u));
 let lastF=null,gi=0;
 const slide=(u,n,i)=>`<img src="${esc(u)}" alt="${esc(n)} foto ${i+1}"${i?' loading="lazy"':""} referrerpolicy="no-referrer" onerror="imgErr(this)">`;
@@ -413,7 +431,7 @@ function fmt(t){
   else{if(ul){h+="</ul>";ul=false}if(x)h+=`<p>${esc(x)}</p>`}});
  return h+(ul?"</ul>":"")}
 $("md").addEventListener("click",e=>{const m=e.target.closest("#more");if(m){$("dtx").classList.remove("clamp");m.remove()}});
-function closeM(){$("mo").classList.remove("on");document.body.style.overflow="";try{if(/[?&]p=/.test(location.search))history.replaceState(null,"",location.pathname)}catch(e){}if(lastF&&lastF.focus)lastF.focus()}
+function closeM(){$("mo").classList.remove("on");document.body.style.overflow="";if(/[?&]p=/.test(location.search))katUrl(true);if(lastF&&lastF.focus)lastF.focus()}
 $("mo").addEventListener("click",e=>{
  if(e.target===$("mo")||e.target.closest("#mx"))return closeM();
  if(e.target.closest("#shr"))return shareP();
