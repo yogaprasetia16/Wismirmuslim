@@ -69,12 +69,12 @@ header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 80
 @media (prefers-reduced-motion:reduce){.hero *,.arch,.archw .dot{animation:none!important}html{scroll-behavior:auto}}
 section{padding:32px 0}
 h2{font-size:30px;margin-bottom:6px}.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
-.cshr{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;margin:0 0 12px}
+.khead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}.khead h2{margin:0}
+.cshr{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer;font:inherit;font-size:13px}
 .cshr svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px}
 .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;font:inherit;font-size:14px}
 .chip[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-.search{width:100%;padding:10px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 @media(min-width:720px){.grid{grid-template-columns:repeat(4,1fr)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
@@ -221,10 +221,8 @@ footer{padding-bottom:110px}}
 
 <section id="terbaru"><h2>Koleksi Terbaru</h2><p class="sub">Baru hadir di WISMIR</p><div class="grid" id="new"><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article></div></section>
 
-<section id="katalog"><h2>Katalog</h2><p class="sub">Pilih kategori, lalu tap tombol pesan.</p>
+<section id="katalog"><div class="khead"><h2>Katalog</h2><button class="cshr" id="cshr" type="button" aria-label="Bagikan katalog kategori ini" title="Bagikan katalog kategori ini"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg><span id="cshrt">Bagikan katalog</span></button></div><p class="sub">Pilih kategori, lalu tap tombol pesan.</p>
 <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
-<button class="cshr" id="cshr" type="button" aria-label="Bagikan katalog kategori ini" title="Bagikan katalog kategori ini"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg><span id="cshrt">Bagikan katalog</span></button>
-<input class="search" id="q" type="search" placeholder="Cari nama atau warna" aria-label="Cari produk">
 <div class="grid" id="all"><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article><article class="card sk" aria-hidden="true"><div class="ph"></div><div class="info"><i></i><i></i></div></article></div></section>
 
 <section id="sale" hidden><h2>Sale</h2><p class="sub">Produk pilihan dengan harga spesial.</p><div class="grid" id="sl"></div></section>
@@ -306,7 +304,7 @@ function photo(u){u=(u||"").trim();if(!u)return"";
 const yes=v=>/^(ya|y|yes|true|1|v|x)$/i.test((v||"").trim());
 const GR=["#c9b8a3,#7c8b6f","#a67c68,#d9cfc2","#e3d7c5,#8a9a7b","#3b3a38,#8a7a6c","#b8a58e,#7c8b6f"];
 
-let D=[],cat="Semua",term="";
+let D=[],cat="Semua";
 function card(p,i){
  const PL=photos(p),img=PL[0]||"";
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
@@ -330,8 +328,7 @@ function render(){
  if(saleShown!==(sl.length>0)){saleShown=sl.length>0;if(window.navRefresh)navRefresh()}
  const cats=["Semua",...CATS.filter(c=>D.some(p=>p.kategori===c)),...[...new Set(D.map(p=>p.kategori))].filter(c=>c&&!CATS.includes(c))];
  $("chips").innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
- const t=term.toLowerCase();
- const L=D.filter(p=>(cat==="Semua"||p.kategori===cat)&&(!t||(p.nama+" "+p.warna+" "+p.bahan).toLowerCase().includes(t)));
+ const L=D.filter(p=>(cat==="Semua"||p.kategori===cat));
  $("all").innerHTML=L.length?L.map(card).join(""):`<p class="empty">Tidak ada produk yang cocok. Coba kategori lain atau tanya langsung lewat WhatsApp.</p>`}
 $("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){cat=b.dataset.c;katUrl();render()}});
 function katUrl(dropP){try{const u=new URLSearchParams(location.search);if(dropP)u.delete("p");if(cat==="Semua")u.delete("k");else u.set("k",slugOf(cat));const q=u.toString();history.replaceState(null,"",location.pathname+(q?"?"+q:""))}catch(e){}
@@ -349,7 +346,6 @@ $("cshr").addEventListener("click",async()=>{
  if(navigator.share){try{await navigator.share({title:"WISMIR – "+nm,text:"Lihat "+nm+" WISMIR",url});return}catch(e){if(e&&e.name==="AbortError")return}}
  try{await navigator.clipboard.writeText(url);toast("Link "+nm+" disalin")}
  catch(e){const a=document.createElement("textarea");a.value=url;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();toast(ok?"Link "+nm+" disalin":"Salin link ini: "+url)}});
-$("q").addEventListener("input",e=>{term=e.target.value;render()});
 
 setTimeout(()=>{const a=$("arch");if(a)a.classList.remove("ld")},15000); // never animate forever (battery)
 const CAT_KEY="wismir_katalog_v1";
