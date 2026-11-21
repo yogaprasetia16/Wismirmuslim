@@ -104,7 +104,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 20px}
 .th button[aria-current=true]{border-color:var(--accent)}
 .th img{width:100%;height:100%;object-fit:cover;display:block}
 .dt{padding:26px 24px;display:flex;flex-direction:column;gap:12px}
-.dt h2{font-size:32px;margin:0;padding-right:36px}
+.gal .mt{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;padding:56px 92px 14px 18px;font-size:30px;line-height:1.1;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.62));text-shadow:0 1px 8px rgba(0,0,0,.35);pointer-events:none;overflow-wrap:anywhere}
+.facts{display:flex;gap:8px}.fc{flex:1 1 0;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 12px}.fc small{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}.fc b{display:block;font-weight:600;font-size:15px;overflow-wrap:anywhere}
 .dt dl{margin:0;display:grid;gap:8px}.dt dt{font-size:13px;color:var(--muted)}.dt dd{margin:0}
 .dt .desc{color:var(--muted);margin:0;white-space:pre-line}
 .x{position:absolute;right:12px;top:12px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
@@ -133,10 +134,10 @@ footer{padding-bottom:110px}}
 .dt .btn.wa{background:var(--wa);border-color:var(--wa);color:#fff;padding:12px;font-size:15px}
 .dt .btn.wa svg{fill:#fff;width:18px;height:18px}
 @media(max-width:759px){
-.gal .main{aspect-ratio:auto;height:48vh;max-height:440px}
+
 .gal .main .trk img{object-position:center 30%}
 .th{padding:8px 10px}.th button{flex-basis:44px;height:56px}
-.dt{padding:18px 18px 16px;gap:10px}.dt h2{font-size:28px}
+.dt{padding:16px 18px 16px;gap:10px}.gal .mt{font-size:26px}
 .dt .btn.wa{position:sticky;bottom:12px;z-index:3;box-shadow:0 8px 20px rgba(0,0,0,.28)}
 }
 .arch.ld::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);transform:translateX(-100%);animation:archsh 1.7s ease-in-out infinite;pointer-events:none}
@@ -152,7 +153,7 @@ footer{padding-bottom:110px}}
 .tag+.tag{margin-left:6px}
 .ar{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .ar.l{left:10px}.ar.r{right:10px}
-.cnt{position:absolute;left:12px;bottom:12px;z-index:2;background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:3px 10px;border-radius:99px}
+.cnt{position:absolute;right:12px;bottom:14px;z-index:2;background:rgba(0,0,0,.45);color:#fff;font-size:12px;padding:3px 10px;border-radius:99px}
 .trk{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 .trk::-webkit-scrollbar{display:none}
 .gal .main .trk img{position:static;flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;scroll-snap-stop:always}
@@ -396,11 +397,11 @@ function openM(k){
  const msg=`Halo WISMIR, saya tertarik dengan "${p.nama}". Apakah masih tersedia? Mohon info ukuran dan warna yang ready.`;
  const rows=[["Kategori",p.kategori],["Bahan",p.bahan],["Ukuran",p.ukuran]].filter(r=>r[1]);
  $("md").innerHTML=`<button class="x" id="mx" aria-label="Tutup">&times;</button><button class="shr" id="shr" type="button" aria-label="Bagikan produk" title="Bagikan"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg></button>
- <div class="gal"><div class="main" id="gm" style="background:linear-gradient(160deg,${GR[k%GR.length]})">${yes(p.sale)||yes(p.terbaru)?`<div class="bdg">${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}</div>`:""}<div class="trk" id="gp">${ph.map((u,i)=>slide(u,p.nama,i)).join("")}</div>${ph.length>1?`<button class="ar l" data-d="-1" aria-label="Foto sebelumnya">&#8249;</button><button class="ar r" data-d="1" aria-label="Foto berikutnya">&#8250;</button><span class="cnt" id="gc">1 / ${ph.length}</span>`:""}</div>
+ <div class="gal"><div class="main" id="gm" style="background:linear-gradient(160deg,${GR[k%GR.length]})">${yes(p.sale)||yes(p.terbaru)?`<div class="bdg">${yes(p.terbaru)?`<span class="new-b">NEW</span>`:""}${yes(p.sale)?`<span class="sale-b">SALE</span>`:""}</div>`:""}<h2 class="mt" id="mt">${esc(p.nama)}</h2><div class="trk" id="gp">${ph.map((u,i)=>slide(u,p.nama,i)).join("")}</div>${ph.length>1?`<button class="ar l" data-d="-1" aria-label="Foto sebelumnya">&#8249;</button><button class="ar r" data-d="1" aria-label="Foto berikutnya">&#8250;</button><span class="cnt" id="gc">1 / ${ph.length}</span>`:""}</div>
  ${ph.length>1?`<div class="th">${ph.map((u,i)=>`<button data-i="${i}" aria-label="Foto ${i+1}" aria-current="${i===0}"><img src="${esc(u)}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="imgErr(this)"></button>`).join("")}</div>`:""}</div>
- <div class="dt"><h2 id="mt">${esc(p.nama)}</h2>${p.harga?`<div class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</div>`:""}
- ${p.deskripsi?`<p class="desc">${esc(p.deskripsi)}</p>`:""}
- <dl>${rows.map(r=>`<div><dt>${r[0]}</dt><dd>${esc(r[1])}</dd></div>`).join("")}${p.detail?`<div><dt>Detail</dt><dd><div class="dtx${p.detail.length>260?" clamp":""}" id="dtx">${fmt(p.detail)}</div>${p.detail.length>260?`<button class="more" id="more">Baca selengkapnya</button>`:""}</dd></div>`:""}</dl>
+ <div class="dt">${p.harga?`<div class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</div>`:""}
+ ${rows.length?`<div class="facts">${rows.map(r=>`<div class="fc"><small>${r[0]}</small><b>${esc(r[1])}</b></div>`).join("")}</div>`:""}
+ ${p.deskripsi?`<p class="desc">${esc(p.deskripsi)}</p>`:""}${p.detail?`<dl><div><dt>Detail</dt><dd><div class="dtx${p.detail.length>260?" clamp":""}" id="dtx">${fmt(p.detail)}</div>${p.detail.length>260?`<button class="more" id="more">Baca selengkapnya</button>`:""}</dd></div></dl>`:""}
  <a class="btn wa" target="_blank" rel="noopener" href="${wa(msg)}">${WAI}Pesan via WhatsApp</a></div>`;
  $("md").dataset.k=k;gi=0;$("gp").addEventListener("scroll",syncP,{passive:true});
  lastF=document.activeElement;
