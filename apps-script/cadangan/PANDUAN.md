@@ -6,7 +6,7 @@ Skrip `Code.gs` di folder ini menyalin Sheet dashboard/kasir dan Sheet katalog "
 1. Buka https://script.google.com → **New project**. Beri nama `Cadangan WISMIR`.
 2. Hapus isi `Code.gs` bawaan, lalu tempel seluruh isi `Code.gs` dari folder ini.
 3. Klik ikon **roda gigi (Project Settings)** di kiri:
-   - Centang **Show "appsscript.json"** tidak perlu. Cukup ubah **Time zone** menjadi `(GMT+07:00) Jakarta` (atau Asia/Jakarta), lalu simpan.
+   - Ubah **Time zone** menjadi Jakarta (GMT+07:00), supaya jadwal "jam 02.00" memakai waktu Jakarta.
    - Di bagian **Script properties** klik **Add script property**:
      - `SHEET_DASHBOARD` = ID Google Sheet dashboard/kasir
      - `SHEET_WEB` = ID Google Sheet katalog "web"
