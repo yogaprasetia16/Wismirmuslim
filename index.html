@@ -124,7 +124,6 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:32px 20px}
 .btn.ico svg.f{fill:currentColor;stroke:none}
 .btn.ico.wab{color:var(--wa);border-color:var(--wa)}
 .btn.ico.spb{color:#ee4d2d;border-color:#ee4d2d}
-.dt .btn.shp{display:block;width:100%;box-sizing:border-box;padding:11px;font-size:15px;color:#ee4d2d;border-color:#ee4d2d}
 .btn.ico{width:46px;height:46px;padding:0;display:grid;place-items:center;border-radius:50%}
 .btn.ico svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs{position:fixed;z-index:40;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--glassb);box-shadow:0 10px 32px rgba(40,25,15,.16),inset 0 1px 0 rgba(255,255,255,.5)}
@@ -247,7 +246,6 @@ footer{padding-bottom:110px}}
 <p><b>WhatsApp</b><br><a id="wa2" target="_blank" rel="noopener">0851 5664 3718</a></p>
 <p id="igrow" hidden><b>Instagram</b><br><a id="ig" target="_blank" rel="noopener"></a></p>
 <p id="ttrow" hidden><b>TikTok</b><br><a id="tt" target="_blank" rel="noopener"></a></p>
-<p id="sprow" hidden><b>Shopee</b><br><a id="sp" target="_blank" rel="noopener"></a></p>
 </div></section>
 </div>
 <footer>© WISMIR, busana muslim wanita, Thamrin City Jakarta</footer>
@@ -296,7 +294,7 @@ function srcOf(){
 const wa=t=>`https://wa.me/${WA}${t?"?text="+encodeURIComponent(t):""}`;
 ["hwa","wa2"].forEach(i=>$(i).href=wa("Halo WISMIR, saya ingin bertanya tentang produk."));
 if(IG){$("hig").href="https://instagram.com/"+IG;$("hig").hidden=false;$("igrow").hidden=false;$("ig").href="https://instagram.com/"+IG;$("ig").textContent="@"+IG;}
-if(SP){const u="https://shopee.co.id/"+SP;$("hsp").href=u;$("hsp").hidden=false;$("sprow").hidden=false;$("sp").href=u;$("sp").textContent="shopee.co.id/"+SP;}
+if(SP){const u="https://shopee.co.id/"+SP;$("hsp").href=u;$("hsp").hidden=false;}
 if(TT){$("htt").href="https://www.tiktok.com/@"+TT;$("htt").hidden=false;$("ttrow").hidden=false;$("tt").href="https://www.tiktok.com/@"+TT;$("tt").textContent="@"+TT;}
 
 function imgErr(el){const u=el.getAttribute("src")||"";if(u.indexOf("foto/")===0&&!el.dataset.r){el.dataset.r="1";el.src=u.slice(5);return}el.style.visibility="hidden"}
@@ -413,7 +411,6 @@ function openM(k){
  <div class="dt">${p.harga?`<div class="pr">${yes(p.sale)&&p.harga_normal?`<s class="old">${esc(p.harga_normal)}</s>`:""}${esc(p.harga)}</div>`:""}
  ${p.detail?`<dl><div><dt>Detail</dt><dd><div class="dtx${p.detail.length>260?" clamp":""}" id="dtx">${fmt(p.detail)}</div>${p.detail.length>260?`<button class="more" id="more">Baca selengkapnya</button>`:""}</dd></div></dl>`:""}
  ${p.deskripsi?`<p class="desc">${esc(p.deskripsi)}</p>`:""}
- ${SP?`<a class="btn line shp" target="_blank" rel="noopener" href="https://shopee.co.id/${SP}">Lihat di Shopee</a>`:""}
  <a class="btn wa" target="_blank" rel="noopener" href="${wa(msg)}">${WAI}Pesan via WhatsApp</a></div>`;
  $("md").dataset.k=k;gi=0;$("gp").addEventListener("scroll",syncP,{passive:true});
  lastF=document.activeElement;
