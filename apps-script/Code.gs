@@ -274,6 +274,9 @@ function testiDeleteFiles_(names) {
 // id | tanggal | kejadian | kunci | jumlah  (satu baris per tanggal + kejadian + kunci). Tab itu tidak ikut dipublikasikan ke web.
 var HIT_EVENTS = { visit: 1, product: 1, wa: 1, share: 1 };
 var STATS_TAB = 'Statistik', HIT_PER_SESSION_HOUR = 80, HIT_PER_DAY = 20000;
+// Batas jumlah nama berbeda per hari (anti-penuh): sumber kunjungan 50; produk/WhatsApp/Bagikan 300.
+// Sumber kunjungan di atas batas dicatat sebagai 'lain'; kunci produk di atas batas diabaikan.
+var HIT_KEY_CAP = { visit: 50, product: 300, wa: 300, share: 300 };
 
 function statsSheet_() {
   var ss = SpreadsheetApp.getActive(), sh = ss.getSheetByName(STATS_TAB);
@@ -287,6 +290,17 @@ function statsSheet_() {
 }
 
 function today_() { return Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd'); }
+
+// true bila nama ini boleh dicatat hari ini (sudah dikenal, atau masih ada tempat).
+function keyAllowed_(cache, day, ev, key) {
+  var ck = 'keys:' + day + ':' + ev, list = [];
+  try { list = JSON.parse(cache.get(ck) || '[]'); } catch (e) { list = []; }
+  if (list.indexOf(key) >= 0) return true;
+  if (list.length >= HIT_KEY_CAP[ev]) return false;
+  list.push(key);
+  cache.put(ck, JSON.stringify(list), 90000);
+  return true;
+}
 
 function hit_(p) {
   var ok = json_({ ok: true });
@@ -305,6 +319,7 @@ function hit_(p) {
     var lock = LockService.getScriptLock();
     if (!lock.tryLock(4000)) return ok; // sibuk: hitungan ini dilewati, tidak mengganggu pengunjung
     try {
+      if (!keyAllowed_(cache, day, ev, key)) { if (ev !== 'visit') return ok; key = 'lain'; }
       var sh = statsSheet_(), id = day + '|' + ev + '|' + key;
       var f = sh.createTextFinder(id).matchEntireCell(true).findNext();
       if (f) { var c = sh.getRange(f.getRow(), 5); c.setValue(Number(c.getValue() || 0) + 1); }
