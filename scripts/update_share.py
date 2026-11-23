@@ -92,6 +92,8 @@ def main():
         sys.exit("Tidak ada produk di Sheet, halaman produk tidak diubah.")
     keep = set()
     for s, row in zip(slugs([i["nama"] for i in items]), items):
+        if re.match(r"^(ya|y|yes|true|1|v|x)$", row.get("sembunyi", ""), re.I):
+            continue  # produk disembunyikan: tanpa halaman (nomor link tetap dihitung dari semua produk)
         d = os.path.join(OUT, s)
         os.makedirs(d, exist_ok=True)
         f = os.path.join(d, "index.html")

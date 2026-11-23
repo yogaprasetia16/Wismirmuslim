@@ -51,7 +51,7 @@ def main():
     rows = list(csv.reader(io.StringIO(text)))
     head = [h.strip().lower() for h in rows[0]]
     items = [dict(zip(head, (c.strip() for c in r))) for r in rows[1:]]
-    items = [i for i in items if i.get("nama")]
+    items = [i for i in items if i.get("nama") and not YES.match(i.get("sembunyi", ""))]
     pick = (next((i for i in items if YES.match(i.get("terbaru", "")) and photos(i)), None)
             or next((i for i in items if photos(i)), None))
     if not pick:

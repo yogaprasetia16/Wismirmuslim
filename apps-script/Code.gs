@@ -35,6 +35,7 @@ function doPost(e) {
       case 'list':   return json_(list_());
       case 'save':   return json_(save_(req));
       case 'delete': return json_(del_(req));
+      case 'hide':   return json_(hide_(req));
       case 'statsGet':    return json_(statsGet_(req));
       case 'testiList':   return json_(testiList_());
       case 'testiSave':   return json_(testiSave_(req));
@@ -119,6 +120,16 @@ function rowIndex_(sh, row, nama) {
   var cur = String(sh.getRange(row, c + 1).getValue()).trim();
   if (nama != null && cur !== String(nama).trim()) throw new Error('Data berubah di Sheet. Muat ulang halaman lalu coba lagi.');
   return row;
+}
+
+// Sembunyikan / tampilkan produk di website (kolom 'sembunyi' di Sheet: 'ya' = tidak tampil). Kolom dibuat otomatis bila belum ada.
+function hide_(req) {
+  var sh = sheet_(), head = headers_(sh);
+  var row = rowIndex_(sh, req.row, req.origNama);
+  var c = head.map(function (h) { return h.toLowerCase(); }).indexOf('sembunyi');
+  if (c < 0) { c = head.length; sh.getRange(1, c + 1).setValue('sembunyi'); }
+  sh.getRange(row, c + 1).setValue(req.hidden ? 'ya' : '');
+  return { ok: true, hidden: !!req.hidden };
 }
 
 function save_(req) {
