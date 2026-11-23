@@ -307,8 +307,11 @@ function parseCSV(t){const r=[];let row=[],f="",q=false;
   else if(c=="\n"||c=="\r"){if(c=="\r"&&t[i+1]=="\n")i++;row.push(f);r.push(row);row=[];f=""}
   else f+=c}
  if(f||row.length){row.push(f);r.push(row)}return r}
+// ALLP = semua produk di Sheet (termasuk yang disembunyikan) supaya nomor link produk tetap sama dengan dashboard; D = yang tampil.
+let ALLP=[];
 function toObjs(rows){const h=rows[0].map(x=>x.trim().toLowerCase());
- return rows.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||"").trim()]))).filter(o=>o.nama)}
+ const all=rows.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||"").trim()]))).filter(o=>o.nama);ALLP=all;
+ return all.filter(o=>!/^(ya|y|yes|true|1|v|x)$/i.test(o.sembunyi||""))}
 function photo(u){u=(u||"").trim();if(!u)return"";
  const m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/)||(/drive\.google\.com/.test(u)&&u.match(/[?&]id=([\w-]+)/));
  return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w900`:u}
@@ -384,7 +387,7 @@ const imgTag=(u,n)=>`<img src="${esc(u)}" alt="${esc(n)}" referrerpolicy="no-ref
 // Link per produk (owner 2026-11-19): /?p=<slug> membuka produk itu; /p/<slug>/ = halaman pratinjau statis (dibuat scripts/update_share.py) yang lalu membuka /?p=<slug>.
 // Aturan slug HARUS sama dengan slug() di scripts/update_share.py.
 const slugOf=n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"produk";
-function slugs(L){const seen={};return L.map(p=>{const s=slugOf(p.nama),n=seen[s]=(seen[s]||0)+1;return n>1?s+"-"+n:s})}
+function slugs(L){const m=new Map(),seen={};(ALLP.length?ALLP:L).forEach(p=>{const s=slugOf(p.nama),n=seen[s]=(seen[s]||0)+1;m.set(p,n>1?s+"-"+n:s)});return L.map(p=>m.get(p)||slugOf(p.nama))}
 let deepDone=false;
 function deepLink(){
  if(deepDone)return;
