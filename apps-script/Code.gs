@@ -33,9 +33,9 @@ function doPost(e) {
     lock.waitLock(20000);
     switch (req.action) {
       case 'list':   return json_(list_());
-      case 'save':   return json_(save_(req));
-      case 'delete': return json_(del_(req));
-      case 'hide':   return json_(hide_(req));
+      case 'save':   return json_(withKatalog_(save_(req)));
+      case 'delete': return json_(withKatalog_(del_(req)));
+      case 'hide':   return json_(withKatalog_(hide_(req)));
       case 'statsGet':    return json_(statsGet_(req));
       case 'testiList':   return json_(testiList_());
       case 'testiSave':   return json_(testiSave_(req));
@@ -164,6 +164,34 @@ function del_(req) {
   (req.deleteFiles || []).forEach(function (n) { if (NAME_RE.test(n) && ghDelete_(PHOTO_DIR + n)) del.push(n); });
   return { ok: true, deleted: del };
 }
+
+// ---------- katalog.json (katalog untuk website, dibaca lebih dulu oleh index.html) ----------
+// Format sama dengan scripts/update_katalog.py: {"v":1,"items":[...]}; produk sembunyi hanya {nama, sembunyi:'ya'}.
+// Gagal menulis tidak membatalkan penyimpanan produk: website otomatis memakai Sheet, dan jadwal GitHub memperbaikinya.
+var KATALOG_FILE = 'katalog.json';
+function katalogBuild_() {
+  var items = list_().items.map(function (it) {
+    if (/^(ya|y|yes|true|1|v|x)$/i.test(String(it.sembunyi || ''))) return { nama: it.nama, sembunyi: 'ya' };
+    var o = {};
+    Object.keys(it).forEach(function (k) { if (k !== '_row' && k && it[k] !== '') o[k] = it[k]; });
+    return o;
+  });
+  return JSON.stringify({ v: 1, items: items });
+}
+
+function katalogPublish_() {
+  try {
+    var text = katalogBuild_(), ex = gh_('get', KATALOG_FILE), body = { message: 'Perbarui katalog', content: Utilities.base64Encode(text, Utilities.Charset.UTF_8), branch: prop_('GITHUB_BRANCH', 'main') };
+    if (ex.getResponseCode() === 200) {
+      var j = JSON.parse(ex.getContentText());
+      try { if (b64text_(j.content) === text) return true; } catch (e) {}
+      body.sha = j.sha;
+    }
+    return gh_('put', KATALOG_FILE, body).getResponseCode() < 300;
+  } catch (e) { return false; }
+}
+
+function withKatalog_(res) { if (res && res.ok) res.katalog = katalogPublish_(); return res; }
 
 function gh_(method, path, body) {
   var url = 'https://api.github.com/repos/' + prop_('GITHUB_REPO') + '/contents/' + path.split('/').map(encodeURIComponent).join('/');

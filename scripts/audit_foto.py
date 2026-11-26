@@ -13,7 +13,7 @@ rows = list(csv.reader(io.StringIO(get(sheet).decode("utf-8-sig"))))
 head = [h.strip().lower() for h in rows[0]]
 
 used, missing = {}, {}
-have = {f for f in os.listdir(os.path.join(ROOT, "foto"))}
+have = {f for f in os.listdir(os.path.join(ROOT, "foto")) if os.path.isfile(os.path.join(ROOT, "foto", f))}
 for r in rows[1:]:
     row = dict(zip(head, (c.strip() for c in r)))
     if not row.get("nama"):
