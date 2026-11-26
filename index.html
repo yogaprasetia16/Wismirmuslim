@@ -286,8 +286,11 @@ const track=(()=>{
   if(once){const id=ev+"|"+key;if(seen[id])return;seen[id]=1;try{if(sessionStorage.getItem("wismir_s_"+id))return;sessionStorage.setItem("wismir_s_"+id,"1")}catch(e){}}
   try{fetch(STATS_URL+"?h="+ev+"&k="+encodeURIComponent(key||"")+"&s="+sid,{mode:"no-cors",keepalive:true,credentials:"omit",referrerPolicy:"no-referrer"})}catch(e){}}})();
 function srcOf(){
- let q="";try{const u=new URLSearchParams(location.search);q=u.get("ref")||u.get("utm_source")||""}catch(e){}
- q=q.toLowerCase().replace(/[^a-z0-9-]/g,"").slice(0,24);if(q)return q;
+ // Sumber dibaca otomatis (tanpa tanda di link): browser di dalam aplikasi Instagram/TikTok/Facebook, lalu asal link (referrer).
+ const ua=navigator.userAgent||"";
+ if(/Instagram/i.test(ua))return "instagram";
+ if(/musical_ly|BytedanceWebview|TikTok|trill/i.test(ua))return "tiktok";
+ if(/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua))return "facebook";
  let h="";try{h=new URL(document.referrer).hostname.toLowerCase()}catch(e){}
  if(!h||h===location.hostname)return "direct";
  return /instagram\./.test(h)?"instagram":/tiktok\./.test(h)?"tiktok":/facebook\.|(^|\.)fb\./.test(h)?"facebook":/wa\.me|whatsapp/.test(h)?"whatsapp":/google\./.test(h)?"google":/(^|\.)t\.co$|twitter\.|(^|\.)x\.com$/.test(h)?"x":/shopee|tokopedia/.test(h)?"marketplace":"lain"}
